@@ -17,17 +17,9 @@ typedef struct SYSTEM_CALL_MESSAGE{
 }SYSTEM_CALL_MESSAGE_STRUCT;
 
 
-//extern unsigned int(*system_call_array[512])(unsigned int,unsigned int,unsigned int,unsigned int);
+extern unsigned int(*system_call_array[512])(unsigned int,unsigned int,unsigned int,unsigned int);
 
-unsigned int thread_create(const char *name,
-													unsigned int(*func)(unsigned int),unsigned int para, 
-													unsigned int	time_slice);
-
-unsigned int thread_delete(OS_THREAD *thread_ptr);															 
-										
-unsigned int thread_sleeping(OS_THREAD *thread_ptr,unsigned int sleep_ticks);
-unsigned int thread_wake_up(OS_THREAD *thread_ptr);
-
+unsigned int system_call_use(unsigned int sys_call_id,unsigned int para0,unsigned int para1,unsigned int para2,unsigned int para3);
 
 
 
