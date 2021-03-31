@@ -17,7 +17,7 @@ unsigned int os_thread_delete(OS_THREAD *thread_ptr)
 		if(os_thread_current_ptr == os_thread_current_ptr->os_thread_ready_next && os_thread_execute_ptr == NULL)
 			return 0xFFFFFFF0;
 		
-		if(thread_ptr->state == THREAD_READY)
+		if(thread_ptr->state == READY)
 		{
 			thread_ptr->os_thread_ready_next->os_thread_ready_previous = thread_ptr->os_thread_ready_previous;
 			thread_ptr->os_thread_ready_previous->os_thread_ready_next = thread_ptr->os_thread_ready_next;
@@ -89,10 +89,6 @@ unsigned int* os_build_stack(OS_THREAD*thread_ptr)
 }
 
 
-
-
-
-
 unsigned int os_thread_create(OS_THREAD *thread_ptr,const char *name,
 															 unsigned int(*func)(unsigned int),unsigned int para, 
 															unsigned int	time_slice)
@@ -103,7 +99,7 @@ unsigned int os_thread_create(OS_THREAD *thread_ptr,const char *name,
 		thread_ptr->name =					name;
 		thread_ptr->func =					func;	
 		thread_ptr->input_para = 		para;
-		thread_ptr->state =					THREAD_NEW;
+		thread_ptr->state =					NEW;
 		thread_ptr->time_slice_new =time_slice;
 		thread_ptr->time_slice_current=time_slice;
 	
@@ -139,7 +135,7 @@ unsigned int os_thread_create(OS_THREAD *thread_ptr,const char *name,
 			thread_ptr->os_thread_ready_previous =		thread_ptr;
 		}
 		os_thread_created_count++;
-		thread_ptr->state = THREAD_READY;
+		thread_ptr->state = READY;
 
 		return OS_SUCCESS;
 }

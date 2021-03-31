@@ -2,7 +2,7 @@
 #include "software_timer.h"
 #include "thread_manage.h"
 #include "queue.h"
-
+#include "system_call.h"
 
 
 /*
@@ -24,13 +24,14 @@ void					*os_unused_memory_back_ptr;
 OS_THREAD *os_thread_current_ptr;
 OS_THREAD *os_thread_created_ptr;
 OS_THREAD *os_thread_execute_ptr;
+OS_THREAD *os_thread_kernel_thread_ptr;
 OS_THREAD  os_thread_init;
 unsigned int os_thread_created_count;
 
 
+SYSTEM_CALL_MESSAGE_STRUCT os_message;
 
-
-
+OS_STATE os_state;
 
 /*
 //that is something about others
@@ -40,3 +41,10 @@ TIMER* os_timer_current_ptr;
 QUEUE *os_queue_create_ptr;
 QUEUE  os_queue;
 unsigned char os_queue_buff[OS_QUEUE_CAPACITY * OS_QUEUE_MESSAGE_SIZE];
+
+
+
+
+
+
+
