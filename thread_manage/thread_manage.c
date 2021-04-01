@@ -1,5 +1,6 @@
 #include "thread_manage.h"
 #include "queue.h"
+#include "software_timer.h"
 #include "system_call.h"
 extern OS_THREAD *os_thread_execute_ptr;
 extern OS_THREAD *os_thread_current_ptr;
@@ -28,12 +29,12 @@ unsigned int init_func(unsigned int para)
 			}
 			OS_ENABLE
 		}
-		if(os_unused_memory_back_ptr - os_unused_memory_front_ptr <= 0x2000)
-		{
-			OS_DISABLE
-			memory_manage_sort();
-			OS_ENABLE
-		}
+//		if(os_unused_memory_back_ptr - os_unused_memory_front_ptr <= 0x2000)
+//		{
+//			OS_DISABLE
+//			memory_manage_sort();
+//			OS_ENABLE
+//		}
 		THREAD_YILED();
 	}
 	return OS_THREAD_ERROR_RETURN_ID;
@@ -48,7 +49,7 @@ void os_thread_initialize(void)
 	os_thread_created_ptr = NULL;
 	os_thread_current_ptr = NULL;
 	os_thread_execute_ptr = NULL;
-	os_thread_kernel_thread_ptr =		&os_thread_init;
+	os_thread_kernel_thread_ptr =	&os_thread_init;
 	os_thread_created_count = 0;
 	
 	os_thread_create(&os_thread_init,"thread_init",init_func,0,2);
@@ -67,7 +68,7 @@ unsigned int os_thread_sleeping(OS_THREAD *thread_ptr,unsigned int sleep_ticks)
 		thread_ptr->timer_own  = timer_ptr;
 		thread_ptr->state =			 SLEEPING;
 		
-		os_timer_create(timer_ptr,(char*)thread_ptr->name,(void (*)(unsigned long))os_thread_wake_up,(unsigned long)thread_ptr,sleep_ticks);
+		timer_ptr = os_timer_create((char*)thread_ptr->name,(void (*)(unsigned long))os_thread_resume,(unsigned long)thread_ptr,sleep_ticks);
 			
 		
 		if(thread_ptr == os_thread_current_ptr)
@@ -83,15 +84,22 @@ unsigned int os_thread_sleeping(OS_THREAD *thread_ptr,unsigned int sleep_ticks)
 	}
 	return 0xFFFFFFFF;
 }
-unsigned int os_thread_wake_up(OS_THREAD *thread_ptr)					
+unsigned int os_thread_resume(OS_THREAD *thread_ptr)
 {
-	if(thread_ptr && thread_ptr->state == SLEEPING)
+	if(thread_ptr)
 	{
-		os_thread_add_to_list(&os_thread_execute_ptr,thread_ptr);
-		thread_ptr->state = READY;
-		thread_ptr->timer_own = NULL;
-	
-		
+		if(thread_ptr->state == SLEEPING)
+		{
+			os_thread_add_to_list(&os_thread_current_ptr,thread_ptr);
+			thread_ptr->state = READY;
+			thread_ptr->timer_own = NULL;
+		}
+		else if(thread_ptr->state == BLOCKED)
+		{
+
+
+
+		}
 		return 0;
 	}
 	return 0xFFFFFFFF;

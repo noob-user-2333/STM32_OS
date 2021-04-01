@@ -6,7 +6,7 @@ extern MEMORY_BLOCK *slob_current;
 extern MEMORY_BLOCK *slob_partial;
 
 extern MEMORY_BLOCK	*free_info_block;
-extern unsigned int Image$$RW_IRAM1$$ZI$$Limit;
+extern unsigned int __RAM_segment_used_end__;
 
 
 
@@ -16,15 +16,13 @@ static void memory_block_slob_recyc(MEMORY_BLOCK *block_ptr);
 
 void memory_manage_initialize()
 {
-	os_unused_memory_front_ptr = (void*)&Image$$RW_IRAM1$$ZI$$Limit;
+	os_unused_memory_front_ptr = (void*)&__RAM_segment_used_end__;
 	os_unused_memory_back_ptr =  (void*)SRAM_END;
 	
 	memset(buddy_system_list,0,sizeof(MEMORY_BLOCK*) * BUDDY_SYSTEM_LIST_LENGTH);
 	free_info_block = NULL;
 	slob_current = memory_block_create(0x1000);
 	slob_partial = NULL;
-
-
 }
 
 void memory_manage_sort()

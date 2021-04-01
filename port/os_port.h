@@ -46,15 +46,16 @@
 #define SYS_CAL_FUNC_TYPE_PTR			(unsigned int (*)(unsigned int,unsigned int,unsigned int,unsigned int))
 
 #define SYS_CAL_THREAD_CREATE 				0
-#define SYS_CAL_THREAD_DELETE					1
+#define SYS_CAL_THREAD_DELETE				1
 #define SYS_CAL_THREAD_SLEEPING 			2
-#define SYS_CAL_THREAD_WAKE_UP 				3
+#define SYS_CAL_THREAD_RESUME 				3
 
 
 typedef enum OS_STATE_ENUM{
 		NEW,
 		READY,
 		SLEEPING,
+		WAIT_FOR_SYSTEM_CALL,
 		BUSY_IN_READ,
 		BUSY_IN_WRITE,
 		BUSYING,

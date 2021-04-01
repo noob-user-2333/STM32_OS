@@ -2,20 +2,21 @@
 #include "memory_block.h"
 
 typedef struct QUEUE_STRUCT{
-	unsigned int	 type_id;
+	unsigned int	type_id;
 	const char	 	*name;	
+	OS_STATE 		state;
 	
 	unsigned int	message_size;
 	unsigned int	capacity;
 
-	unsigned int  enqueued_number;
+	unsigned int  	enqueued_number;
 	unsigned int	available_storage;
 	
-	void					*queue_start;
-	void  				*queue_end;
+	void			*queue_start;
+	void  			*queue_end;
 	
-	void					*read_ptr;
-	void					*write_ptr;
+	void			*read_ptr;
+	void			*write_ptr;
 	
 	
 	struct QUEUE_STRUCT
@@ -28,6 +29,9 @@ typedef struct QUEUE_STRUCT{
 
 extern QUEUE *os_queue_create_ptr;
 extern QUEUE  os_queue;
+
+
+QUEUE* queue_createqueue_create(char *name,unsigned int message_size,unsigned int queue_size);
 
 unsigned int os_queue_create(QUEUE* queue_ptr,char *name,unsigned int message_size,void *queue_start,unsigned int queue_size);
 unsigned int os_queue_delete(QUEUE* queue_ptr);

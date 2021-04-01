@@ -7,63 +7,67 @@
 
 
 
-TIMER* os_timer_create(TIMER *timer_ptr,char *name_ptr,void (*timer_timeout_function)(unsigned long para),
+TIMER* os_timer_create(char *name_ptr,void (*timer_timeout_function)(unsigned long para),
 										unsigned long para,unsigned long initial_ticks)
 {
-	if(initial_ticks && timer_ptr)
+	if(initial_ticks)
 	{
-//		TIMER *timer_ptr = os_unused_memory_ptr;
-//		os_unused_memory_ptr += sizeof(TIMER);
-//		
-		timer_ptr->name =									name_ptr;
-		timer_ptr->remaining_ticks = 			initial_ticks;
-		timer_ptr->timer_timeout_function=timer_timeout_function;
-		timer_ptr->type_id =							SOFTWARE_TIM_ID;
-		timer_ptr->input_para =						para;
-		
-		if(os_timer_current_ptr)
+		KERNEL_MEMORY_CACHE *kmem_ptr = kmem_malloc(sizeof(TIMER));
+		if(kmem_ptr)
 		{
-			TIMER *timer_next;
-			if(os_timer_current_ptr->remaining_ticks > initial_ticks)
+			TIMER *timer_ptr = kmem_ptr->start;
+
+
+			timer_ptr->name =						name_ptr;
+			timer_ptr->remaining_ticks = 			initial_ticks;
+			timer_ptr->timer_timeout_function=		timer_timeout_function;
+			timer_ptr->type_id =					SOFTWARE_TIM_ID;
+			timer_ptr->input_para =					para;
+			timer_ptr->kmem_own =					kmem_ptr;
+			if(os_timer_current_ptr)
 			{
-				os_timer_current_ptr->remaining_ticks -= initial_ticks;
+				TIMER *timer_next;
+				if(os_timer_current_ptr->remaining_ticks > initial_ticks)
+				{
+					os_timer_current_ptr->remaining_ticks -= initial_ticks;
+
+					timer_ptr->timer_next = 		os_timer_current_ptr;
+					timer_ptr->timer_previous =	os_timer_current_ptr->timer_previous;
 				
-				timer_ptr->timer_next = 		os_timer_current_ptr;
-				timer_ptr->timer_previous =	os_timer_current_ptr->timer_previous;
+					os_timer_current_ptr->timer_previous->timer_next = timer_ptr;
+					os_timer_current_ptr->timer_previous	=						 timer_ptr;
 				
-				os_timer_current_ptr->timer_previous->timer_next = timer_ptr;
-				os_timer_current_ptr->timer_previous	=						 timer_ptr;
+					os_timer_current_ptr = timer_ptr;
 				
-				os_timer_current_ptr = timer_ptr;
+				}
+				else
+				{
+					timer_next = os_timer_current_ptr;
+					do{
+						timer_ptr->remaining_ticks -= timer_next->remaining_ticks;
+						timer_next = timer_next->timer_next;
+					}while(timer_ptr->remaining_ticks >= timer_next->remaining_ticks && timer_next != os_timer_current_ptr);
+
+					timer_ptr->timer_next = 			timer_next;
+					timer_ptr->timer_previous = 	timer_next->timer_previous;
 				
+					timer_next->timer_previous->timer_next = timer_ptr;
+					timer_next->timer_previous	=						 timer_ptr;
+				}
 			}
 			else
 			{
-				timer_next = os_timer_current_ptr;
-				do{
-					timer_ptr->remaining_ticks -= timer_next->remaining_ticks;
-					timer_next = timer_next->timer_next;
-				}while(timer_ptr->remaining_ticks >= timer_next->remaining_ticks && timer_next != os_timer_current_ptr);
-			
-				timer_ptr->timer_next = 			timer_next;
-				timer_ptr->timer_previous = 	timer_next->timer_previous;
-				
-				timer_next->timer_previous->timer_next = timer_ptr;
-				timer_next->timer_previous	=						 timer_ptr;
+				timer_ptr->timer_next = 			timer_ptr;
+				timer_ptr->timer_previous =			timer_ptr;
+				os_timer_current_ptr =				timer_ptr;
+				TIM3->CR1 |= 1UL;
 			}
+			return timer_ptr;
 		}
-		else
-		{
-			timer_ptr->timer_next = 			timer_ptr;
-			timer_ptr->timer_previous =		timer_ptr;
-			os_timer_current_ptr =				timer_ptr;
-			TIM3->CR1 |= 1UL;
-		}
-		return timer_ptr;
 	}
 	return NULL;
 }
-TIMER* os_timer_delete(TIMER *timer_ptr)
+unsigned int os_timer_delete(TIMER *timer_ptr)
 {
 	if(timer_ptr)
 	{

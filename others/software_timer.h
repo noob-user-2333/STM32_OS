@@ -28,6 +28,6 @@ extern TIMER* os_timer_current_ptr;
 
 
 void software_tim_init();
-TIMER* os_timer_create(TIMER *timer_ptr,char *name_ptr,void (*timer_timeout_function)(unsigned long para),
+TIMER* os_timer_create(char *name_ptr,void (*timer_timeout_function)(unsigned long para),
 										unsigned long para,unsigned long initial_ticks);
-TIMER* os_timer_delete(TIMER *timer_ptr);
+unsigned int os_timer_delete(TIMER *timer_ptr);

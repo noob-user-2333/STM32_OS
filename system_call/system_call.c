@@ -3,12 +3,13 @@
 extern OS_THREAD *os_thread_current_ptr;
 extern OS_THREAD *os_thread_execute_ptr;
 extern OS_THREAD  os_thread_init;
+extern OS_STATE  os_state;
 void  switch_to_init_thread();
 unsigned int thread_create(const char *name,
-															 unsigned int(*func)(unsigned int),unsigned int para, 
-															unsigned int	time_slice);
-unsigned int(*system_call_array[512])(unsigned int,unsigned int,unsigned int,unsigned int)__attribute__((section(".ARM.__AT_0x0800F000"))) = {
-																			thread_create,os_thread_delete,os_thread_sleeping,os_thread_wake_up,0,0,0,0,0,0,0,0,0,0,0,0	};
+						unsigned int(*func)(unsigned int),unsigned int para,
+						unsigned int	time_slice);
+const unsigned int(*system_call_array[512])(unsigned int,unsigned int,unsigned int,unsigned int)/*__attribute__((section(".ARM.__AT_0x0800F000")))*/ = {
+																			thread_create,os_thread_delete,os_thread_sleeping,os_thread_resume,0,0,0,0,0,0,0,0,0,0,0,0	};
 
 																			
 																			
@@ -34,7 +35,15 @@ unsigned int system_call_use(unsigned int sys_call_id,unsigned int para0,unsigne
 		message.reserved	=						0;
 
 		os_queue_send(&os_queue,&message);
-		switch_to_init_thread();
+		os_switch_to_kernel_thread();
+		for(unsigned int i=0;i<=100000 && os_state == WAIT_FOR_SYSTEM_CALL;i++)
+		{
+			if(i == 100000)
+			{
+				os_state = READY;
+				return 0xFFFFFF00;
+			}
+		}
 		return 0;
 	}
 	return 0xFFFFFFFF;
@@ -42,27 +51,6 @@ unsigned int system_call_use(unsigned int sys_call_id,unsigned int para0,unsigne
 																			
 
 
-void  switch_to_init_thread()
-{
-	os_thread_execute_ptr = &os_thread_init;
-	THREAD_YILED();
-}
 
 
-unsigned int thread_create(const char *name,
-															 unsigned int(*func)(unsigned int),unsigned int para, 
-															unsigned int	time_slice)
-{
-	if(time_slice)
-	{
-		KERNEL_MEMORY_CACHE *kmem_ptr = kmem_malloc(sizeof(OS_THREAD));
-		OS_THREAD *thread_ptr = kmem_ptr->start;
 
-		os_thread_create(thread_ptr,name,func,para,time_slice);
-		thread_ptr->kmem_list = kmem_ptr;
-
-
-		return 0;
-	}
-	return 0xFFFFFFFF;
-}

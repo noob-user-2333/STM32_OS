@@ -1,3 +1,4 @@
+
 		IMPORT os_thread_current_ptr
 		IMPORT task_switch_context
 		IMPORT task_switch_to_kernel_thread
@@ -50,7 +51,6 @@ SVC_Handler
 	STMDB r0!,{r4-r11}
 	STR   r0,[r2,#12]
 
-
 	STMDB sp!,{r3,r14}
 	MOV	  r0,#0xE0
 	MSR   basepri,r0
@@ -86,7 +86,6 @@ PendSV_Handler
 	
 	STMDB r0!,{r4-r11}
 	STR   r0,[r2,#12]
-
 
 	STMDB sp!,{r3,r14}
 	MOV	  r0,#0xE0
@@ -132,4 +131,3 @@ os_first_start
 	ALIGN
 ;	LTORG
 	END
-		
